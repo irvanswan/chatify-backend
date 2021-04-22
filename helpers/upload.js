@@ -35,7 +35,7 @@ let uploadFile = multer({storage : storage2, limits:{
 })
 const formUpload = {
     uploadAvatar : (req,res,next) =>{
-            const uploadedImage = uploadImage.single(`image`)
+            const uploadedImage = uploadImage.single(`photo`)
             uploadedImage(req, res, (err)=>{
                 if (err instanceof multer.MulterError) {
                     formResponse({

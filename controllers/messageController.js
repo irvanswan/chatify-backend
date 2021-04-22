@@ -1,20 +1,39 @@
-const messageModel = require('../models/Chatroom')
+const chatModel = require('../models/Chatroom')
 const formResponse = require('../helpers/formResponse')
+const messageModel = require('../models/Message')
 
 const chatController ={
     getChatlist : (req, res) =>{
-        messageModel.getChatting(req).then((result) => {
+        chatModel.getChatlist(req).then((result) => {
             formResponse(result, res)
         }).catch((err)=> {
             formResponse(err, res)
         })
     },
+    getLastMessage : (req,res)=>{
+        if(req.query.id_chatroom != null){
+            chatModel.getLastMessage(req).then((result)=>{
+                formResponse(result, res)
+            }).catch((err)=>{
+                formResponse(err,res)
+            })
+        }
+    },
     sendMessage : (req,res)=>{
-        messageModel.sendChat(req).then((result)=>{
+        chatModel.sendChat(req).then((result)=>{
             formResponse(result, res)
-        }).catch((err=>{
+        }).catch((err)=>{
             formResponse(err, res)
-        }))
+        })
+    },
+    getAllMessage : (req,res)=>{
+        if(req.query.id_chatroom != null){
+            messageModel.getAllMessage(req).then((result)=>{
+                formResponse(result, res)
+            }).catch((err)=>{
+                formResponse(err, res)
+            })
+        }
     }
 }
 

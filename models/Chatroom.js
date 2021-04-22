@@ -1,47 +1,63 @@
-const e = require('express')
 const db = require('../helpers/database')
 // const config = require('../helpers/queryBuilder')
 // const table = 'room_chat'
 
 const Chatting = {
-    getChatting : (req)=>{
+    
+    getChatlist : (req)=>{
         return new Promise((resolve, reject)=>{
+            let data = []
             if(req.params.id !=null || req.params.id !=undefined){
-                let parameter = {
-                    id_user : req.params.id,
-                    id_friend : req.query.id_friend
-                }
-                const {id_user, id_friend} = parameter
-                db.query(`SELECT * FROM room_chat JOIN personal ON room_chat.id_chat = personal.id_room WHERE personal.user1 IN(${id_user},${id_friend})
-                AND personal.user2 IN(${id_user},${id_friend})`,(error, result)=>{
+                const id_user = req.params.id
+                db.query(`SELECT * FROM (SELECT A.id AS user1, B.id AS user2, A.id_user AS id_user1, B.id_user AS id_user2, 
+                    A.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user <> B.id_user AND A.id_chatroom <> B.id_chatroom)
+                    AS b JOIN chatrooms ON b.chatroom = chatrooms.id JOIN users ON b.id_user2 = users.id LEFT JOIN
+                    contacts ON b.user1 = contacts.id_user
+                    WHERE b.id_user1 = ${id_user}`,(error, result)=>{
                     if(!error){
-                        if(result.rows.length > 0){
-                            db.query(`SELECT * FROM detail_chat JOIN room_chat ON detail_chat.id_chat = room_chat.id_chat WHERE room_chat.id_chat = ${result.rows[0].id_chat}`,(err, res)=>{
-                                if(!err){
-                                    resolve({
-                                        message : `success get data`,
-                                        status : 200,
-                                        data : res.rows
-                                    })
-                                }else{
-                                    reject({
-                                        message : `Error`,
-                                        status : 400,
-                                        data : []
-                                    })
-                                }
-                            })
-                        }
+                        resolve({
+                            message : 'success',
+                            status : 200,
+                            data : result.rows
+                        })
                     }else{
                         reject({
                             message : `Error`,
-                            status : 200,
+                            status : 500,
                             data : []
                         })
                     }
                 })
             }else{
-
+                reject({
+                    message : `Error`,
+                    status : 400,
+                    data : []
+                })
+            }
+        })
+    },
+    getLastMessage : (req)=>{
+        return new Promise((resolve, reject)=>{
+            if(req.query.id_chatroom != null){
+                db.query(`SELECT * FROM detail_chat JOIN 
+                (SELECT A.id_user AS user1, B.id_user AS user2, A.id AS me,A.id_chatroom AS chatroom, B.id AS you
+                FROM participiants A, participiants B WHERE A.id_user <> B.id_user)AS b
+                ON detail_chat.id_sender = b.me WHERE b.chatroom = ${req.query.id_chatroom} ORDER BY timestamp DESC limit 1`,(err, res)=>{
+                    if(!err){
+                        resolve({
+                            message : `Success`,
+                            status : 200,
+                            data : res.rows
+                        })
+                    }else{
+                        reject({
+                            message : `Error`,
+                            status : 500,
+                            data : []
+                        })
+                    }
+                })
             }
         })
     },

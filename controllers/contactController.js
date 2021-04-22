@@ -1,12 +1,26 @@
 const contactModel = require('../models/Contact')
 const formResponse = require('../helpers/formResponse')
 const userController={
-    getAllContact : (req, res) =>{
-        contactModel.getAllContacts(req).then((result) => {
-            formResponse(result, res)
-        }).catch((err)=> {
-            formResponse(err, res)
-        })
+    getContact: (req, res) =>{
+        if(req.query.phone != null || req.query.name != null){
+            contactModel.searchContacts(req).then((result)=>{
+                formResponse(result, res)
+            }).catch((err)=>{
+                formResponse(err, res)
+            })
+        }else if(req.query.id_contact != null){
+            contactModel.getContactByIdContact(req).then((result)=>{
+                formResponse(result, res)
+            }).catch((err)=>{
+                formResponse(err, res)
+            })
+        }else{
+            contactModel.getAllContacts(req).then((result) => {
+                formResponse(result, res)
+            }).catch((err)=> {
+                formResponse(err, res)
+            })
+        }
     },
     getContactByName : (req, res) =>{
         if(req.query.name != undefined || req.query.name != null){

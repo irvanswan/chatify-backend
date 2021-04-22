@@ -37,59 +37,58 @@ const userModel = {
             })
     },
     registerUser:(req)=>{
-        let phone = {phone : req.body.phone}
-        let email = {email : req.body.email}
         return new Promise((resolve, reject)=>{
-            db.query(`${selectWhere(table, phone)}
-                    ${orWhere(email)}`, 
-            (err, result)=>{
-                if(!err){
-                    if(result.rows.length > 0){
-                        reject({
-                            message : `data is exist`,
-                            statusCode : 200
-                        })
-                    }else{
-                        if(phone == null || email == null){
-                            reject({
-                                message : `Phone or email is empty`,
-                                statusCode : 400
-                            })
-                        }else{
-                            let newBody = {
-                                phone : req.body.phone,
-                                email : req.body.email,
-                                username : req.body.username?? req.body.phone,
-                                password : req.body.password,
-                                level : req.body.level ?? 'basic',
-                                bio : req.body.bio ?? 'Iam Here ! '
-                            }
-                            let {phone,email,password,level,bio,username} = newBody
-                            db.query(`INSERT INTO users(${Object.keys(newBody)}) VALUES('${phone}','${email}','${username}','${password}','${level}','${bio}')`, (error)=>{
-                                if(!error){
-                                    resolve({
-                                        message : `Data has been registered`,
-                                        statusCode : 200
-                                    })
-                                }else{
-                                    reject({
-                                        message : `Data failed to registered ${error}`,
-                                        statusCode : 500,
-                                        data : error
-                                    })
+            if(req.body.username == null || req.body.email == null || req.body.password == null){
+                reject({
+                    message : `Username, email or password is empty`,
+                    statusCode : 400
+                })
+            }else{
+                let email = {email : req.body.email}
+                    db.query(`${selectWhere(table, email)}`, 
+                        (err, result)=>{
+                        if(!err){
+                            if(result.rows.length > 0){
+                                reject({
+                                    message : `data is exist`,
+                                    statusCode : 200
+                                })
+                            }else{
+                                let newBody = {
+                                    email : req.body.email,
+                                    username : req.body.username,
+                                    password : req.body.password,
+                                    type : req.body.type ?? 'basic',
+                                    bio : req.body.bio ?? 'Ada ',
+                                    isonline : false,
+                                    timestamp : 'NOW()'
                                 }
+                                let {email,username,password,type,bio,isonline,timestamp} = newBody
+                                db.query(`INSERT INTO users(${Object.keys(newBody)}) VALUES('${email}','${username}','${password}','${type}','${bio}',${isonline},${timestamp})`, (error)=>{
+                                    if(!error){
+                                        resolve({
+                                            message : `Data has been registered`,
+                                            statusCode : 200
+                                        })
+                                    }else{
+                                        reject({
+                                            message : `Data failed to registered ${error}`,
+                                            statusCode : 500,
+                                            data : error
+                                        })
+                                    }
+                                })
+                            }
+                        }else{
+                            // error handled
+                            reject({
+                                message : `Error ${err}`,
+                                statusCode : 400,
+                                data : err
                             })
                         }
-                    }
-                }else{
-                // error handled
-                    reject({
-                        message : `Error ${err}`,
-                        statusCode : 400,
-                        data : err
                     })
-                }
-            })
+            }
         })
     },
     loginUser : (req)=>{
@@ -112,23 +111,22 @@ const userModel = {
                                         status: 400
                                     })
                                 }else {
-                                    const {id_user, phone, name, level} = result?.rows[0]
+                                    const {id, email, type} = result?.rows[0]
                                     const processToken = {
-                                        "id": id_user,
-                                        "phone": phone,
-                                        "name": name,
-                                        "level": level ?? 'basic'
+                                        "id": id,
+                                        "email": email,
+                                        "type": type
                                       }
                                     jwt.sign(processToken, process.env.SECRET_KEY, function(err, token) {
                                         if(!err) {
-                                            db.query(`UPDATE users SET status = 'online'  WHERE id_user = '${id_user}'`,(messageError)=>{
+                                            db.query(`UPDATE users SET isonline = true  WHERE id = '${id}'`,(messageError)=>{
                                                 if(!error){
                                                     resolve({
                                                         message: `login successfully`,
                                                         status: 200,
                                                         data:{
                                                             token : token,
-                                                            id_user : result.rows[0].id_user,
+                                                            id_user : result.rows[0].id,
                                                             status : 'online'
                                                         }
                                                     })
@@ -162,7 +160,7 @@ const userModel = {
         })
     },
     updateUser : (req) =>{
-        const where = {id_user : req.params.id}
+        const where = {id_user : req.params.id_user}
         return new Promise((resolve, reject)=>{
             db.query(`${selectWhere(table,where)}`, (error, result)=>{
                 if (result.rows.length < 1) {
@@ -190,10 +188,9 @@ const userModel = {
                         password    : (req.body.password != null || req.body.password != '')? req.body.password : result.rows[0].password,
                         avatar      : (!req.file || req.file === undefined || req.file== null) ? result.rows[0].image : `uploads/images/${req.file.filename}`,
                         bio         : req.body.bio?? result.rows[0].bio,
-                        status      : req.body.status?? 'online'
                     }
                     const {username,phone,avatar,email,bio,status,password} = newBody
-                    db.query(`UPDATE users SET username = '${username}', phone = '${phone}',image = '${avatar}', email = '${email}', bio = '${bio}', status = '${status}',password = '${password}' WHERE id_user = '${req.params.id}'`, (errorUpdate) => {
+                    db.query(`UPDATE users SET username = '${username}', phone = '${phone}',photo = '${avatar}', email = '${email}', bio = '${bio}',password = '${password}' WHERE id_user = '${req.params.id_user}'`, (errorUpdate) => {
                         if (!errorUpdate) {
                                 resolve({
                                     message: `Update data success`,
@@ -201,7 +198,7 @@ const userModel = {
                                 })
                             } else {
                                 reject({
-                                    message:`${errorUpdate}`,
+                                    message:`${errorUpdate.message},UPDATE users SET username = '${username}', phone = '${phone}',photo = '${avatar}', email = '${email}', bio = '${bio}', status = '${status}',password = '${password}' WHERE id_user = '${req.params.id}'`,
                                     status: 500,
                                 })
                             }

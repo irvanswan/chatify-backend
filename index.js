@@ -7,7 +7,7 @@ app.use(bodyParser.json());
 app.use(express.static('public'))
 //routing imports
 const router = require('./route')
-let whitelist = ['http://localhost:3000','http://localhost:5024']
+let whitelist = ['http://localhost:3000','http://localhost:5024','http://localhost:3001']
 let corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {

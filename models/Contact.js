@@ -7,9 +7,9 @@ const contactModel = {
     getAllContacts :(req)=>{
         return new Promise((resolve, reject)=>{
             if(req.query.id != null){
-                db.query(`SELECT * FROM ${table} RIGHT JOIN users ON contacts.friend = users.id_user
+                db.query(`SELECT * FROM ${table} RIGHT JOIN users ON contacts.relation = users.id_user
                          WHERE contacts.id_account
-                          = ${req.query.id}`, (err, res)=>{
+                          = ${req.params.id}`, (err, res)=>{
                     if(!err){
                         if(res.rows.length < 1){
                             reject({
@@ -57,7 +57,7 @@ const contactModel = {
                         data :[]
                     })
                 }
-                db.query(`SELECT * FROM contacts LEFT JOIN users ON contacts.id_account = ${req.params.id} AND contacts.friend = ${req.query.id_user}`,(err, res)=>{
+                db.query(`SELECT * FROM contacts LEFT JOIN users ON contacts.id_account = users.id_user WHERE contacts.id_account = ${req.params.id} AND contacts.relation = ${req.query.id_user}`,(err, res)=>{
                     if(!err){
                         if(res.rows.length < 1){
                             reject({
@@ -67,43 +67,25 @@ const contactModel = {
                             })
                         }else{
                             const newBody = {
-                                name : req.body.name,
-                                phone : req.body.phone
+                                name : req.body.name ?? res.rows[0].username
                             }
-                            const{name, phone} = newBody
-                            if(phone != null){
-                                db.query(`UPDATE users SET phone = '${phone}' WHERE id_user = '${res.rows[0].friend}'`, (error)=>{
-                                    if(!error){
-                                        resolve({
-                                            message : `UPDATE users SET phone = '${phone}' WHERE id_user = '${res.rows[0].friend}' `,
-                                            statusCode : 200
-                                        })
-                                    }else{
-                                        reject({
-                                            message : `Update user failed ${error}`,
-                                            statusCode : 400,
-                                            data : []
-                                        })
-                                    }
-                                })
-                            }
-                            if(name != null){
-                                db.query(`UPDATE contacts SET name = '${name}' WHERE friend = '${req.query.id_user}' AND id_user = '${req.params.id}' `, (error, result)=>{
-                                    if(!err){
-                                        resolve({
-                                            message : `Update user success`,
-                                            statusCode : 200,
-                                            data : []
-                                        })
-                                    }else[
-                                        reject({
-                                            messsage: `Update user failed`,
-                                            statusCode : 400,
-                                            data : err
-                                        })
-                                    ]
-                                })
-                            }
+                            const{name} = newBody
+                            db.query(`UPDATE contacts SET name = '${name}' WHERE friend = '${req.query.id_user}' AND id_user = '${req.params.id}' `, (error, result)=>{
+                                if(!err){
+                                    resolve({
+                                        message : `Update user success`,
+                                        statusCode : 200,
+                                        data : []
+                                    })
+                                }else{
+                                    reject({
+                                        messsage: `Update user failed`,
+                                        statusCode : 400,
+                                        data : err
+                                    })
+                                }
+                            })
+                            
                         }
                     }else{
                         reject({
@@ -116,8 +98,8 @@ const contactModel = {
             }
         })
     },
-    getContactByName : (req)=>{
-        const where = {name : req.query.name}
+    searchContacts : (req)=>{
+        const where = {key : req.query.key}
         return new Promise((resolve, reject)=>{
             if(req.params.id == null || req.params.id ==''){
                 reject({
@@ -126,7 +108,7 @@ const contactModel = {
                     data : []
                 })
             }else{
-                db.query(`SELECT * FROM contacts JOIN users ON contacts.id_account = users.id_user WHERE contacts.name LIKE '%${Object.values(where)}%' AND contacts.id_account = ${req.params.id}`, (err, res)=>{
+                db.query(`SELECT * FROM contacts JOIN users ON contacts.id_account = users.id_user JOIN  WHERE contacts.name LIKE '%${Object.values(where)}%' OR contacts.phone LIKE '%${Object.values(where)}' AND contacts.id_account = ${req.params.id}`, (err, res)=>{
                     if(!err){
                         if(res.rows.length < 1){
                             reject({
@@ -161,7 +143,7 @@ const contactModel = {
                     data : []
                 })
             }else{
-                db.query(`SELECT * FROM contacts RIGHT JOIN users ON contacts.friend = users.id_user WHERE contacts.friend = '${req.query.id_contact}' AND contacts.id_account = ${req.params.id}`, (err, res)=>{
+                db.query(`SELECT * FROM contacts RIGHT JOIN users ON contacts.relation = users.id WHERE contacts.relation = '${req.query.id_contact}' AND contacts.id_user = ${req.params.id} OR users.id=`, (err, res)=>{
                     if(!err){
                         if(res.rows.length < 1){
                             reject({
@@ -207,7 +189,7 @@ const contactModel = {
                                 data : result.rows
                             })
                         }else{
-                            db.query(`SELECT * FROM contacts JOIN users ON contacts.id_account = users.id_user WHERE contacts.id_account = ${req.params.id} AND contacts.friend = ${result.rows[0].id_user}`,(err, res) =>{
+                            db.query(`SELECT * FROM contacts JOIN users ON contacts.id_account = users.id_user WHERE contacts.id_account = ${req.params.id} AND contacts.relation = ${result.rows[0].id_user}`,(err, res) =>{
                                 if(!err){
                                     if(res.rows.length > 0){
                                         reject ({
@@ -218,11 +200,11 @@ const contactModel = {
                                     }else{
                                         const newBody = {
                                             id_account : req.params.id,
-                                            name : req.body.name ?? result.rows[0].phone,
-                                            friend : result.rows[0].id_user
+                                            name : req.body.name ?? result.rows[0].username,
+                                            relation : result.rows[0].id_user
                                         }
-                                        const {id_account, name, friend}  = newBody
-                                        db.query(`INSERT INTO ${table} (${Object.keys(newBody)}) VALUES(${id_account},'${name}','${friend}')`,(errorMessage, resultMessage)=>{
+                                        const {id_account, name, relation}  = newBody
+                                        db.query(`INSERT INTO ${table} (${Object.keys(newBody)}) VALUES(${id_account},'${name}','${relation}')`,(errorMessage, resultMessage)=>{
                                             if(!errorMessage){
                                                 resolve({
                                                     message : 'add contact success',
@@ -231,7 +213,7 @@ const contactModel = {
                                                 })
                                             }else{
                                                 reject({
-                                                    message : `INSERT INTO ${table}(${Object.keys(newBody)}) VALUES(${id_user},'${name}',${friend})`,
+                                                    message : `failed add contact`,
                                                     statusCode : 400,
                                                     data : errorMessage
                                                 })

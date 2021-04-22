@@ -8,13 +8,6 @@ const userController={
             formResponse(err, res)
         })
     },
-    insertUser : (req, res)=>{
-        userModel.insertUser(req).then((result)=>{
-            formResponse(result, res)
-        }).catch((err)=>{
-            formResponse(err, res)
-        })
-    },
     registerUser : (req, res)=>{
         userModel.registerUser(req).then((result)=>{
             formResponse(result, res)
