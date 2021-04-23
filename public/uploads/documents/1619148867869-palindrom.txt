@@ -1,0 +1,20 @@
+1. Palindrom
+Masukkan teks
+p_data = hitung banyak karakter pada teks -1 
+pembanding = ''
+Ulangi (i = p_data; i >= 0; i--) // ulangi dari i = p_data sampai dengan 0 akan dikurangi 1
+	isi pembanding dengan teks[i]
+Jika(pembanding == teks)
+	output 'palindrom'
+Kecuali
+	output 'bukan palindrom'
+
+
+2. Reserver word
+Masukkan kalimat
+array = pecah kalimat menjadi array sesuai dengan spasi
+panjang_data = hitung banyak data di dalam array -1
+teks = ''
+for(i = panjang_data; i >=0; i--)
+	isi teks dengan array[i]
+output teks

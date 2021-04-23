@@ -20,7 +20,7 @@ const chatController ={
         }
     },
     sendMessage : (req,res)=>{
-        chatModel.sendChat(req).then((result)=>{
+        messageModel.sendChat(req).then((result)=>{
             formResponse(result, res)
         }).catch((err)=>{
             formResponse(err, res)

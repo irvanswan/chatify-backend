@@ -53,7 +53,7 @@ const formUpload = {
         })
     },
     uploadFile : (req, res, next) =>{
-        if(req.file !== 'undefined' || req.file != null){
+        if(req.files !== 'undefined' || req.files != null){
             const uploadedFiles = uploadFile.array(`document`, 10)
             uploadedFiles(req, res, (err)=>{
                 if (err instanceof multer.MulterError) {
@@ -73,10 +73,7 @@ const formUpload = {
                 }
         })
         }else{
-            formResponse({
-                message: `Success tapi gk ada file`,
-                status: 200
-            },res)
+            next()
         }
     }
 }
