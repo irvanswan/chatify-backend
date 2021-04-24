@@ -2,12 +2,20 @@ const userModel = require('../models/User')
 const formResponse = require('../helpers/formResponse')
 const userController={
     getUser : (req, res) =>{
-        userModel.getAllUser(req).then((result) => {
-            formResponse(result, res)
-        }).catch((err)=> {
-            formResponse(err, res)
-        })
-    },
+        if(req.query.id_chatroom == null){
+            userModel.getAllUser(req).then((result) => {
+                formResponse(result, res)
+            }).catch((err)=> {
+                formResponse(err, res)
+            })
+        }else{
+            userModel.getInfoUser(req).then((result)=>{
+                formResponse(result, res)
+            }).catch((err)=>{
+                formResponse(err, res)
+            })
+        }
+    },  
     registerUser : (req, res)=>{
         userModel.registerUser(req).then((result)=>{
             formResponse(result, res)
@@ -43,13 +51,6 @@ const userController={
             formResponse(err,res)
         })
     },
-    sendFiles : (req, res)=>{
-        userModel.sendFiles(req).then((result)=>{
-            formResponse(result, res)
-        }).catch((err)=>{
-            formResponse(err,res)
-        })
-    }
 }
 
 module.exports = userController

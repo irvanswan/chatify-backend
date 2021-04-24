@@ -27,7 +27,7 @@ const chatController ={
         })
     },
     getAllMessage : (req,res)=>{
-        if(req.query.id_chatroom != null){
+        if(req.query.id_chatroom != null && req.query.id_user != null){
             messageModel.getAllMessage(req).then((result)=>{
                 formResponse(result, res)
             }).catch((err)=>{

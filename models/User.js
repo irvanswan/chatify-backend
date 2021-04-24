@@ -4,7 +4,6 @@ const table = 'users'
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
-const { resolve } = require('path')
 const {orWhere,select,orderBy,limitOffset,selectWhere,deleted, selectLike} = config
 
 
@@ -17,7 +16,7 @@ const userModel = {
                 }
                 const {limit,offset} = newdata
                 db.query(`${select(table)} 
-                          ${orderBy('id_user')}
+                          ${orderBy('id')}
                           ${limitOffset(limit, (offset-1)*limit)}`, 
                 (err, result)=>{
                     if(!err){
@@ -160,7 +159,7 @@ const userModel = {
         })
     },
     updateUser : (req) =>{
-        const where = {id_user : req.params.id_user}
+        const where = {id : req.params.id_user}
         return new Promise((resolve, reject)=>{
             db.query(`${selectWhere(table,where)}`, (error, result)=>{
                 if (result.rows.length < 1) {
@@ -190,7 +189,7 @@ const userModel = {
                         bio         : req.body.bio?? result.rows[0].bio,
                     }
                     const {username,phone,avatar,email,bio,status,password} = newBody
-                    db.query(`UPDATE users SET username = '${username}', phone = '${phone}',photo = '${avatar}', email = '${email}', bio = '${bio}',password = '${password}' WHERE id_user = '${req.params.id_user}'`, (errorUpdate) => {
+                    db.query(`UPDATE users SET username = '${username}', phone = '${phone}',photo = '${avatar}', email = '${email}', bio = '${bio}',password = '${password}' WHERE id = '${req.params.id_user}'`, (errorUpdate) => {
                         if (!errorUpdate) {
                                 resolve({
                                     message: `Update data success`,
@@ -256,14 +255,31 @@ const userModel = {
             })
         }
     },
-    sendFiles : (req) =>{
+    getInfoUser : (req)=>{
         return new Promise((resolve, reject)=>{
-            
+            if(req.query.id_chatroom != null){
+                db.query(`SELECT * FROM users JOIN (SELECT A.id_user AS user1, B.id_user AS user2, B.id_chatroom AS chatroom FROM
+                    participiants A, participiants B WHERE A.id_user != B.id_user AND A.id_chatroom
+                    = B.id_chatroom)AS b ON users.id
+                    = b.user1 LEFT JOIN contacts ON users.id = contacts.relation WHERE b.chatroom = ${req.query.id_chatroom}
+                    AND b.user1 != ${req.query.id_user} AND b.user2 = ${req.query.id_user}`,(err, res)=>{
+                    if(!err){
+                        resolve({
+                            message : `Success`,
+                            status : 200,
+                            data : res.rows
+                        })
+                    }else{
+                        reject({
+                            message : `SELECT * FROM users JOIN (SELECT A.id_user AS user1, B.id_user AS user2, B.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user <> B.id_user AND A.id_chatroom <> B.id_chatroom)AS b ON users.id = b.user1 LEFT JOIN contacts ON users.id = contacts.relation WHERE b.chatroom = ${req.query.id_chatroom} AND NOT b.user1 = ${req.params.id_user} AND b.user2 = ${req.params.id}`,
+                            status : 500,
+                            data : err
+                        })
+                    }
+                })
+            }
         })
-       /*  req.file.map((element)=>{
-            console.log(element.filename)
-        }) */
-    }
+    },
 }
 
 module.exports = userModel

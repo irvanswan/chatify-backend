@@ -10,9 +10,9 @@ const Chatting = {
             if(req.params.id !=null || req.params.id !=undefined){
                 const id_user = req.params.id
                 db.query(`SELECT * FROM (SELECT A.id AS user1, B.id AS user2, A.id_user AS id_user1, B.id_user AS id_user2, 
-                    A.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user <> B.id_user AND A.id_chatroom <> B.id_chatroom)
+                    A.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user != B.id_user AND A.id_chatroom = B.id_chatroom)
                     AS b JOIN chatrooms ON b.chatroom = chatrooms.id JOIN users ON b.id_user2 = users.id LEFT JOIN
-                    contacts ON b.user1 = contacts.id_user
+                    contacts ON b.id_user2 = contacts.relation
                     WHERE b.id_user1 = ${id_user}`,(error, result)=>{
                     if(!error){
                         resolve({
@@ -33,30 +33,6 @@ const Chatting = {
                     message : `Error`,
                     status : 400,
                     data : []
-                })
-            }
-        })
-    },
-    getLastMessage : (req)=>{
-        return new Promise((resolve, reject)=>{
-            if(req.query.id_chatroom != null){
-                db.query(`SELECT * FROM detail_chat JOIN 
-                (SELECT A.id_user AS user1, B.id_user AS user2, A.id AS me,A.id_chatroom AS chatroom, B.id AS you
-                FROM participiants A, participiants B WHERE A.id_user <> B.id_user)AS b
-                ON detail_chat.id_sender = b.me WHERE b.chatroom = ${req.query.id_chatroom} ORDER BY timestamp DESC limit 1`,(err, res)=>{
-                    if(!err){
-                        resolve({
-                            message : `Success`,
-                            status : 200,
-                            data : res.rows
-                        })
-                    }else{
-                        reject({
-                            message : `Error`,
-                            status : 500,
-                            data : []
-                        })
-                    }
                 })
             }
         })
@@ -165,58 +141,6 @@ const Chatting = {
                     }
                 })
             }
-           /*  if(req.query.id_chat != null){
-                db.query(`INSERT INTO detail_chat VALUES('','${req.query.id_chat}','${req.params.id}')`,(err, res)=>{
-                    if(!err){
-                        resolve({
-                            message : 'success get contacts',
-                            statusCode : 200,
-                            data : res.rows
-                        })
-                    }
-                })
-            }else{
-                db.query(`SELECT * FROM room_chat JOIN participiants ON room_chat.id_chat = particpians.id_chat
-                WHERE participiants.id_member = '${req.params.id}' OR participians.id_member = ${req.query.id_friend} GROUP BY room_chat.id_chat`,(error,result)=>{
-
-                })
-               db.query(`INSERT INTO room_chat VALUES('','','personal') RETURNING id_chat`, (err, res)=>{
-                    if(!err){
-                        let id_chat = res.rows[0].id_chat;
-                        db.query(`INSERT INTO detail_chat VALUES('','${id_chat}','${req.params.id}','${req.body.message}','unread')`, (error1)=>{
-                            if(!error1){
-                                db.query(`INSERT INTO participiants VALUES('','${id_chat}','${req.query.id_friend}')`, (error2)=>{
-                                    if(!error2){
-                                        resolve({
-                                            message : 'success send message',
-                                            statusCode : 200,
-                                            data : []
-                                        })
-                                    }else{
-                                        reject({
-                                            message : 'failed send message2',
-                                            statusCode : 400,
-                                            data : []
-                                        })
-                                    }
-                                })
-                            }else{
-                                reject({
-                                    message : 'failed send message1',
-                                    statusCode : 400,
-                                    data : []
-                                })
-                            }
-                        })
-                    }else{
-                        reject({
-                            message : 'failed to seng message',
-                            statusCode : 500,
-                            data : [req.body.message]
-                        })
-                    }
-               })
-            } */
         })
     }
 }
