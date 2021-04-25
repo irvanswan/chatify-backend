@@ -60,10 +60,11 @@ const userModel = {
                                     type : req.body.type ?? 'basic',
                                     bio : req.body.bio ?? 'Ada ',
                                     isonline : false,
-                                    timestamp : 'NOW()'
+                                    timestamp : 'NOW()',
+                                    is_active : false
                                 }
-                                let {email,username,password,type,bio,isonline,timestamp} = newBody
-                                db.query(`INSERT INTO users(${Object.keys(newBody)}) VALUES('${email}','${username}','${password}','${type}','${bio}',${isonline},${timestamp})`, (error)=>{
+                                let {email,username,password,type,bio,isonline,timestamp,is_active} = newBody
+                                db.query(`INSERT INTO users(${Object.keys(newBody)}) VALUES('${email}','${username}','${password}','${type}','${bio}',${isonline},${timestamp},${is_active})`, (error)=>{
                                     if(!error){
                                         resolve({
                                             message : `Data has been registered`,
@@ -118,25 +119,32 @@ const userModel = {
                                       }
                                     jwt.sign(processToken, process.env.SECRET_KEY, function(err, token) {
                                         if(!err) {
-                                            db.query(`UPDATE users SET isonline = true  WHERE id = '${id}'`,(messageError)=>{
-                                                if(!error){
-                                                    resolve({
-                                                        message: `login successfully`,
-                                                        status: 200,
-                                                        data:{
-                                                            token : token,
-                                                            id_user : result.rows[0].id,
-                                                            status : 'online'
-                                                        }
-                                                    })
-                                                }else{
-                                                    reject({
-                                                        message: messageError,
-                                                        status: 200,
-                                                        data: encode
-                                                    }) 
-                                                }
-                                            })
+                                            if(result.rows[0].is_active != true){
+                                                reject({
+                                                    message: `user is not active, please contact admin`,
+                                                    status: 400
+                                                })
+                                            }else{
+                                                db.query(`UPDATE users SET isonline = true  WHERE id = '${id}'`,(messageError)=>{
+                                                    if(!error){
+                                                        resolve({
+                                                            message: `login successfully`,
+                                                            status: 200,
+                                                            data:{
+                                                                token : token,
+                                                                id_user : result.rows[0].id,
+                                                                status : 'online'
+                                                            }
+                                                        })
+                                                    }else{
+                                                        reject({
+                                                            message: messageError,
+                                                            status: 200,
+                                                            data: encode
+                                                        }) 
+                                                    }
+                                                })
+                                            }
                                         }
                                     });
     

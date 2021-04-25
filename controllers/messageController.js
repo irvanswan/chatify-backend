@@ -10,15 +10,6 @@ const chatController ={
             formResponse(err, res)
         })
     },
-    getLastMessage : (req,res)=>{
-        if(req.query.id_chatroom != null){
-            chatModel.getLastMessage(req).then((result)=>{
-                formResponse(result, res)
-            }).catch((err)=>{
-                formResponse(err,res)
-            })
-        }
-    },
     sendMessage : (req,res)=>{
         messageModel.sendChat(req).then((result)=>{
             formResponse(result, res)

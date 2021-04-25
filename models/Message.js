@@ -25,7 +25,7 @@ const messageModel = {
                 db.query(`SELECT * FROM detail_chat JOIN (SELECT A.id AS participiant1, B.id AS participiant2, A.id_user AS user1
                     ,B.id_user AS user2, A.id_chatroom AS chatroom1, B.id_chatroom AS chatroom2 FROM participiants A, participiants B WHERE A.id_user != B.id_user)
                     AS b ON detail_chat.id_sender = b.participiant1 JOIN users ON b.user1 = users.id 
-                    LEFT JOIN contacts ON users.id = contacts.relation
+                    LEFT JOIN contacts ON users.id = contacts.relation LEFT JOIN files ON detail_chat.id = files.id_detail
                     WHERE b.chatroom1 = ${req.query.id_chatroom}  AND b.chatroom2 = ${req.query.id_chatroom} ORDER BY detail_chat.timestamp ASC`,(err, res)=>{
                         if(!err){
                             resolve({
@@ -54,8 +54,30 @@ const messageModel = {
                         let id = result.rows[0].id
                         if(req.body.message != null){
                             db.query(`INSERT INTO detail_chat(id_sender,message,timestamp,status) VALUES 
-                                (${id},'${req.body.message}',NOW(),'unread')`,(err, res)=>{
+                                (${id},'${req.body.message}',NOW(),'unread') RETURNING id`,(err, res)=>{
                                 if(!err){
+                                    if(req.files != undefined || req.files.length > 0){
+                                        console.log(`ada file nih inputkan dengan id = ${res.rows[0].id}`)
+                                        for(let i=0; i < req.files.length; i++){
+                                            db.query(`INSERT INTO files(id_detail,type,name_file) VALUES(${res.rows[0].id},'image','uploads/file_images/${req.files[i].filename}')`,(err1)=>{
+                                                if(!err1){
+                                                    if(i == req.files.length - 1){
+                                                        resolve({
+                                                            message : 'success',
+                                                            status : 200,
+                                                            data : []
+                                                        })
+                                                    }
+                                                }else{
+                                                    reject({
+                                                        message : 'failed',
+                                                        status : 400,
+                                                        data : []
+                                                    })
+                                                }
+                                            })
+                                        }
+                                    } 
                                     resolve({
                                         message : 'success',
                                         status : 200,
@@ -69,27 +91,6 @@ const messageModel = {
                                     })
                                 }
                             })
-                        }
-                        if(req.files != undefined){
-                            for(let i=0; i < req.files.length; i++){
-                                db.query(`INSERT INTO file(id_sender,type,name) VALUES(${id},'document','${req.files[i].filename}')`,(err)=>{
-                                    if(!err){
-                                        if(i == req.files.length - 1){
-                                            resolve({
-                                                message : 'success',
-                                                status : 200,
-                                                data : []
-                                            })
-                                        }
-                                    }else{
-                                        reject({
-                                            message : 'failed',
-                                            status : 400,
-                                            data : []
-                                        })
-                                    }
-                                })
-                            }
                         }
                     }else{
                         reject({
