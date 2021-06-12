@@ -10,10 +10,21 @@ const Chatting = {
             if(req.params.id !=null || req.params.id !=undefined){
                 const id_user = req.params.id
                 db.query(`SELECT * FROM (SELECT A.id AS user1, B.id AS user2, A.id_user AS id_user1, B.id_user AS id_user2, 
-                    A.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user != B.id_user AND A.id_chatroom = B.id_chatroom)
-                    AS b JOIN chatrooms ON b.chatroom = chatrooms.id JOIN users ON b.id_user2 = users.id LEFT JOIN
-                    contacts ON b.id_user2 = contacts.relation
-                    WHERE b.id_user1 = ${id_user}`,(error, result)=>{
+                    A.id_chatroom AS chatroom FROM participiants A, participiants B WHERE A.id_user != B.id_user AND A.id_chatroom = B.id_chatroom)AS a
+                    JOIN chatrooms ON a.chatroom = chatrooms.id JOIN
+                    (SELECT detail_chat.message AS message, detail_chat.timestamp AS message_timestamp, detail_chat.id AS id_message, detail_chat.status AS status_message,
+                    participiants.id_chatroom AS chatroom, participiants.id_user,
+                    files.name_file AS file, files.id AS id_file
+                    FROM detail_chat JOIN 
+                    participiants ON detail_chat.id_sender = participiants.id
+                    LEFT JOIN files ON detail_chat.id = files.id_detail
+                    WHERE detail_chat.timestamp IN(SELECT MAX(detail_chat.timestamp) FROM detail_chat JOIN participiants ON detail_chat.id_sender = participiants.id
+                    GROUP BY participiants.id_chatroom))AS b ON chatrooms.id = b.chatroom
+                    JOIN (SELECT COUNT(detail_chat.status) AS counting,chatrooms.id AS chatroom FROM detail_chat JOIN participiants ON detail_Chat.id_sender = participiants.id
+                    JOIN chatrooms ON participiants.id_chatroom = chatrooms.id WHERE detail_chat.status = 'unread' GROUP BY chatrooms.id) AS c ON chatrooms.id = c.chatroom
+                    JOIN users ON a.id_user2 = users.id LEFT JOIN
+                    contacts ON a.id_user2 = contacts.relation
+                    WHERE a.id_user1 = ${id_user} ORDER BY b.message_timestamp DESC`,(error, result)=>{
                     if(!error){
                         resolve({
                             message : 'success',

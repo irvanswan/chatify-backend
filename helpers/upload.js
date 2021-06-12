@@ -95,7 +95,7 @@ const formUpload = {
     },
     uploadFileImages : (req, res, next) =>{
         if(req.files !== 'undefined' || req.files != null){
-            const uploadedFilesImage = uploadImages.array(`document`, 10)
+            const uploadedFilesImage = uploadImages.array(`images`, 10)
             uploadedFilesImage(req, res, (err)=>{
                 if (err instanceof multer.MulterError) {
                     formResponse({
