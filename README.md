@@ -1,6 +1,6 @@
 # BACKEND CHATIFY WITH EXPRESS JS
 ***
-> REQUIREMENT
+## REQUIREMENT
 
 ```
 1.  Node JS
@@ -12,7 +12,7 @@
 7.  library pg (for connect backend with pg admin)
 ```
 
-> FOLDER FUNCTION
+## FOLDER FUNCTION
 
 | Folder  | Function |
 | ----- | --- |
@@ -22,7 +22,7 @@
 | helpers | for helping the API to processing data  |
 | public/uploads | for handle upload file  |
 
->> Folder Structure
+## Folder Structure
 ```
  ├── controllers         
  │  ├── contactController.js
@@ -53,4 +53,4 @@
  └── .env
 ```
 
-[Front End](https://github.com/irvanswan/chatify-frontend)
+## [Front End](https://github.com/irvanswan/chatify-frontend)
