@@ -50,6 +50,13 @@ const userController={
         }).catch((err)=>{
             formResponse(err, res)
         })
+    },
+    searchContact : (req, res)=>{
+        contactModel.searchContacts(req).then((result)=>{
+            formResponse(result, res)
+        }).catch((err)=>{
+            formResponse(err, res)
+        })
     }
 }
 

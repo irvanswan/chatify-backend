@@ -44,6 +44,32 @@ const messageModel = {
             }
         })
     },
+    searchChat : (req)=>{
+        return new Promise((resolve, reject)=>{
+            if(req.query.key != null){
+                const {key} = req.query
+                db.query(`SELECT * FROM contacts JOIN users ON contacts.id_account = users.id_user JOIN  WHERE contacts.name LIKE '%${key}%' OR contacts.phone LIKE '%${key}'`, (err, res)=>{
+                    if(!err){
+                        resolve({
+                            message : `Success`,
+                            status : 200,
+                            data : res.rows
+                        })
+                    }else{
+                        reject({
+                            message : `Internal Server Error : ${err}`,
+                            status : 500
+                        })
+                    }
+                });
+            }else{
+                reject({
+                    message : `Bad Request`,
+                    status : 400
+                })
+            } 
+        })
+    },
     sendChat : (req)=>{
         return new Promise((resolve, reject)=>{
             if(req.query.id_chatroom != null && req.query.id_sender != null){

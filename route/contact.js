@@ -6,6 +6,7 @@ route.get('/:id', contactController.getContact) // get all contact
 /* route.get('/:id', contactController.getContactByName) // get user */
 route.post('/:id', contactController.addContact) // add contact
 route.patch('/:id', contactController.updateContact) //update 
+route.get('/search/', contactController.searchContact)
 
 
 module.exports = route
