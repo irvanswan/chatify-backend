@@ -4,7 +4,7 @@ const app = express()
 require('dotenv').config();
 const cors = require('cors')
 const httpServer = require('http').createServer(app);
-const whitelist = ['http://localhost:3000','http://localhost:5024','http://localhost:3001']
+const whitelist = ['http://localhost:3000','http://localhost:5024','http://localhost:3001', 'https://chatify-frontend.vercel.app']
 const options = {
   cors: {
     origin: [...whitelist],
