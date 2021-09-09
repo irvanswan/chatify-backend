@@ -54,6 +54,6 @@ app.get('*', (req, res) => {
 })
 // end routing
 
-httpServer.listen(process.env.Server_PORT, () => {
+httpServer.listen(process.env.SERVER_PORT || 5000, () => {
   console.log(`Server app listening at http://localhost:${process.env.SERVER_PORT}`)
 })
