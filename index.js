@@ -42,7 +42,8 @@ io.on("connection", socket =>{
   });
   socket.on("send message", (data)=>{
     app.get('/api/v1/')
-    io.to(data.roomId).emit("message", data.updated)
+    console.log(data);
+    io.to(data.roomId).emit("message", data)
   });
 })
 
