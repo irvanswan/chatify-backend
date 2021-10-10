@@ -40,10 +40,10 @@ io.on("connection", socket =>{
   socket.on("join", (data)=>{
     socket.join(data.roomId)
   });
-  socket.on("send message", (data)=>{
-    app.get('/api/v1/')
-    console.log(data);
-    io.to(data.roomId).emit("message", data)
+  socket.on("send message", async(data)=>{
+    console.log('data kiriman', data);
+    io.emit('ping');
+    await io.to(data.roomId).emit("message", data)
   });
 })
 
