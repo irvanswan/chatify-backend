@@ -9,6 +9,7 @@ route.patch('/:id_user',verifyToken, upload.uploadAvatar, hashing, userControlle
 route.get('/', userController.getUser)// get user 
 route.post('/login', userController.loginUser)// login user
 route.post('/register', hashing, userController.registerUser)// register user
+route.get('/:id', userController.getInfoUser)
 //route.delete('/:id', userController.deleteUser)
 //route.get('/search/', userController.searchingUser)
 //route.post('/formupload/',upload.uploadFile, userController.sendFiles)

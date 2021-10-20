@@ -288,6 +288,33 @@ const userModel = {
             }
         })
     },
+    getDetailUser : (req)=>{
+        return new Promise((resolve, reject)=>{
+            if(req.params.id != null){
+                db.query(`SELECT * FROM users WHERE id = ${req.params.id}`,(error, result)=>{
+                    if(error){
+                        reject({
+                            message : 'ERROR GETTING USER',
+                            status : 500,
+                        })
+                    }else{
+                        if(result.rows.length < 1){
+                            reject({
+                                message : 'USER NOT FOUND',
+                                status : 400
+                            })
+                        }else{
+                            resolve({
+                                message : 'SUCCESS GET USER',
+                                status : 200,
+                                data : result.rows
+                            })
+                        }
+                    }
+                })
+            }
+        })
+    }
 }
 
 module.exports = userModel

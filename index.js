@@ -42,9 +42,11 @@ io.on("connection", socket =>{
   });
   socket.on("send message", async(data)=>{
     console.log('data kiriman', data);
-    io.emit('ping');
-    await io.to(data.roomId).emit("message", data)
+    io.to(data.roomId).emit("message", data)
   });
+  socket.on('delivered', async(data)=>{
+    await io.to(data.roomId).emite('response', data)
+  })
 })
 
 app.get('*', (req, res) => {

@@ -51,6 +51,13 @@ const userController={
             formResponse(err,res)
         })
     },
+    getInfoUser : (req, res)=>{
+        userModel.getDetailUser(req).then((result)=>{
+            formResponse(result, res)
+        }).catch((err)=>[
+            formResponse(err, res)
+        ])
+    }
 }
 
 module.exports = userController
